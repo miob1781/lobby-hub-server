@@ -11,13 +11,15 @@ const saltRounds = 10;
 
 // Require the User model in order to interact with the database
 const User = require("../models/User.model");
+const Lobbyist = require("../models/Lobbyist.model");
+const Politician = require("../models/Politician.model");
 
 router.get("/loggedin", (req, res) => {
     res.json(req.user);
 });
 
 router.post("/signup", (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, email, type } = req.body;
 
     if (!username) {
         return res
@@ -50,16 +52,39 @@ router.post("/signup", (req, res) => {
             return res.status(400).json({ errorMessage: "Username already taken." });
         }
 
-        // if user is not found, create a new user - start with hashing the password
+        // if user is not found, create a new user (lobbyist or politician) - start with hashing the password
         return bcrypt
             .genSalt(saltRounds)
             .then((salt) => bcrypt.hash(password, salt))
             .then((hashedPassword) => {
                 // Create a user and save it in the database
-                return User.create({
-                    username,
-                    password: hashedPassword,
-                });
+                if (type === "lobbyist"){
+                    const {organization} = req.body
+                    return Lobbyist.create({
+                        username,
+                        password: hashedPassword,
+                        email,
+                        type,
+                        organization
+                    }).catch(err => {
+                        console.log("An error has occurred while creating a new lobbyist:", err);
+                        next(err);
+                    })
+                } else if (type === "politician"){
+                    const {areasOfInfluence, position, party} = req.body
+                    return Politician.create({
+                        username,
+                        password: hashedPassword,
+                        email,
+                        type,
+                        areasOfInfluence,
+                        position,
+                        party
+                    }).catch(err => {
+                        console.log("An error has occurred while creating a new politician:", err);
+                        next(err);
+                    })
+                }
             })
             .then((user) => {
                 // Bind the user to the session object
@@ -144,5 +169,31 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
 
     res.json(req.payload);
 });
+
+router.get("/user/:id", (req, res, next) => {
+    const {id} = req.params
+    User.findById(id)
+        .then(user => {
+            res.json(user)
+        })
+        .catch(err => {
+            console.log("An error has occurred loading user from DB:", err);
+            next(err);
+        })
+})
+
+// router.put("/user/:id/update", (req, res, next) => {
+//     const {id} = req.params
+//     const {username, password, email, type} = req.body
+//     User.findByIdAndUpdate(id)
+//         .then(user => {
+
+//         })
+// })
+
+router.delete("/user/:id/update", (req, res, next) => {
+    const {id} = req.params
+    User.findByIdAndDelete(id)
+})
 
 module.exports = router;
