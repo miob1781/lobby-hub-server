@@ -182,7 +182,7 @@ router.get("/user/:id", (req, res, next) => {
         })
 })
 
-// router.put("/user/:id/update", (req, res, next) => {
+// router.put("/user/:id/edit", (req, res, next) => {
 //     const {id} = req.params
 //     const {username, password, email, type} = req.body
 //     User.findByIdAndUpdate(id)
@@ -191,7 +191,7 @@ router.get("/user/:id", (req, res, next) => {
 //         })
 // })
 
-router.delete("/user/:id/update", (req, res, next) => {
+router.delete("/user/:id/delete", (req, res, next) => {
     const {id} = req.params
     User.findByIdAndDelete(id)
 })

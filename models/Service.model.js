@@ -5,8 +5,7 @@ const serviceSchema = new Schema({
     lobbyist: {
         type: Schema.Types.ObjectId,
         ref: "Lobbyist",
-        required: true,
-        unique: true
+        required: true
     },
     areasOfInfluence: {
         type: [String],
