@@ -66,10 +66,11 @@ router.post("/signup", (req, res) => {
                         email,
                         type,
                         organization
-                    }).catch(err => {
-                        console.log("An error has occurred while creating a new lobbyist:", err);
-                        next(err);
                     })
+                        .catch(err => {
+                            console.log("An error has occurred while creating a new lobbyist:", err);
+                            next(err);
+                        })
                 } else if (type === "politician") {
                     const { areasOfInfluence, position, party } = req.body
                     return Politician.create({
@@ -80,15 +81,23 @@ router.post("/signup", (req, res) => {
                         areasOfInfluence,
                         position,
                         party
-                    }).catch(err => {
-                        console.log("An error has occurred while creating a new politician:", err);
-                        next(err);
                     })
+                        .catch(err => {
+                            console.log("An error has occurred while creating a new politician:", err);
+                            next(err);
+                        })
                 }
             })
-            .then((user) => {
-                // Bind the user to the session object
-                res.status(201).json(user);
+            .then(() => {
+                const payload = { username, password };
+                // Create and sign the token
+                const authToken = jwt.sign(
+                    payload,
+                    process.env.TOKEN_SECRET,
+                    { algorithm: 'HS256', expiresIn: "6h" }
+                );
+                // Send the token as the response
+                return res.status(200).json({ authToken: authToken });
             })
             .catch((error) => {
                 if (error instanceof mongoose.Error.ValidationError) {
