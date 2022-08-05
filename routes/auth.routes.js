@@ -182,14 +182,92 @@ router.get("/user/:id", (req, res, next) => {
         })
 })
 
-// router.put("/user/:id/edit", (req, res, next) => {
-//     const {id} = req.params
-//     const {username, password, email, type} = req.body
-//     User.findByIdAndUpdate(id)
-//         .then(user => {
+router.put("/user/:id/edit", (req, res) => {
+    const {id} = req.params;
+    const { username, password, email, type } = req.body;
 
-//         })
-// })
+    if (!username) {
+        return res
+            .status(400)
+            .json({ errorMessage: "Please provide your username." });
+    }
+
+    if (password.length < 8) {
+        return res.status(400).json({
+            errorMessage: "Your password needs to be at least 8 characters long.",
+        });
+    }
+
+    //   ! This use case is using a regular expression to control for special characters and min length
+    /*
+    const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+  
+    if (!regex.test(password)) {
+      return res.status(400).json( {
+        errorMessage:
+          "Password needs to have at least 8 chars and must contain at least one number, one lowercase and one uppercase letter.",
+      });
+    }
+    */
+
+    // // Search the database for a user with the username submitted in the form
+    // User.findOne({ username }).then((found) => {
+    //     // If the user is found, send the message username is taken
+    //     if (!found) {
+    //         return res.status(400).json({ errorMessage: "Username cannot be found." });
+    //     }
+
+        bcrypt
+            .genSalt(saltRounds)
+            .then((salt) => bcrypt.hash(password, salt))
+            .then((hashedPassword) => {
+                // Create a user and save it in the database
+                if (type === "lobbyist"){
+                    const {organization} = req.body
+                    return Lobbyist.findByIdAndUpdate(id, {
+                        username,
+                        password: hashedPassword,
+                        email,
+                        type,
+                        organization
+                    }, {new: true}).catch(err => {
+                        console.log("An error has occurred while creating a new lobbyist:", err);
+                        next(err);
+                    })
+                } else if (type === "politician"){
+                    const {areasOfInfluence, position, party} = req.body
+                    return Politician.findByIdAndUpdate(id, {
+                        username,
+                        password: hashedPassword,
+                        email,
+                        type,
+                        areasOfInfluence,
+                        position,
+                        party
+                    }, {new: true}).catch(err => {
+                        console.log("An error has occurred while creating a new politician:", err);
+                        next(err);
+                    })
+                }
+            })
+            .then((user) => {
+                // Bind the user to the session object
+                res.status(201).json(user);
+            })
+            .catch((error) => {
+                if (error instanceof mongoose.Error.ValidationError) {
+                    return res.status(400).json({ errorMessage: error.message });
+                }
+                // if (error.code === 11000) {
+                //     return res.status(400).json({
+                //         errorMessage:
+                //             "Username need to be unique. The username you chose is already in use.",
+                //     });
+                // }
+                return res.status(500).json({ errorMessage: error.message });
+            });
+    // });
+});
 
 router.delete("/user/:id/delete", (req, res, next) => {
     const {id} = req.params

@@ -1,20 +1,20 @@
 // Keywords for areas of influence which are used as an enum in the backend and used in checkboxes in the frontend.
 module.exports = [
-    "tax",
-    "finance",
-    "economy",
-    "social affairs",
     "agriculture",
-    "environment",
+    "care",
+    "defense",
+    "economy",
+    "education",
     "energy",
-    "traffic",
+    "environment",
+    "family",
+    "finance",
+    "foreign",
+    "health",
     "housing",
     "justice",
-    "foreign",
-    "defense",
-    "health",
-    "care",
-    "education",
     "science",
-    "family"
+    "social affairs",
+    "tax",
+    "transport"
 ]

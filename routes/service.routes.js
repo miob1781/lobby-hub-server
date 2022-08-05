@@ -53,7 +53,7 @@ router.put("/:serviceId/edit", (req, res, next) => {
     const {serviceId} = req.params
     const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer} = req.body
     const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer}
-    Service.findByIdAndUpdate(serviceId, serviceData)
+    Service.findByIdAndUpdate(serviceId, serviceData, {new: true})
         .catch(err => {
             console.log("An error has occurred while updating a service:", err);
             next(err);
