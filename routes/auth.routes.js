@@ -58,8 +58,8 @@ router.post("/signup", (req, res) => {
             .then((salt) => bcrypt.hash(password, salt))
             .then((hashedPassword) => {
                 // Create a user and save it in the database
-                if (type === "lobbyist"){
-                    const {organization} = req.body
+                if (type === "lobbyist") {
+                    const { organization } = req.body
                     return Lobbyist.create({
                         username,
                         password: hashedPassword,
@@ -70,8 +70,8 @@ router.post("/signup", (req, res) => {
                         console.log("An error has occurred while creating a new lobbyist:", err);
                         next(err);
                     })
-                } else if (type === "politician"){
-                    const {areasOfInfluence, position, party} = req.body
+                } else if (type === "politician") {
+                    const { areasOfInfluence, position, party } = req.body
                     return Politician.create({
                         username,
                         password: hashedPassword,
@@ -137,10 +137,10 @@ router.post("/login", (req, res, next) => {
                 }
 
                 //At this point, we have checked that credentials are correct...
-                const { _id, email, name } = user;
+                const { _id, email, username } = user;
 
                 // Create an object that will be set as the token payload
-                const payload = { _id, email, name };
+                const payload = { _id, email, username };
 
                 // Create and sign the token
                 const authToken = jwt.sign(
@@ -150,12 +150,9 @@ router.post("/login", (req, res, next) => {
                 );
 
                 // Send the token as the response
-                res.status(200).json({ authToken: authToken });
-
-                return res.json(user);
+                return res.status(200).json({ authToken: authToken });
             });
         })
-
         .catch((err) => {
             // in this case we are sending the error handling to the error handling middleware that is defined in the error handling file
             // you can just as easily run the res.status that is commented out below
@@ -171,10 +168,10 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
 });
 
 router.get("/user/:id", (req, res, next) => {
-    const {id} = req.params
+    const { id } = req.params
     User.findById(id)
         .then(user => {
-            res.json(user)
+            return res.json(user)
         })
         .catch(err => {
             console.log("An error has occurred loading user from DB:", err);
@@ -183,7 +180,7 @@ router.get("/user/:id", (req, res, next) => {
 })
 
 router.put("/user/:id/edit", (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     const { username, password, email, type } = req.body;
 
     if (!username) {
@@ -210,68 +207,57 @@ router.put("/user/:id/edit", (req, res) => {
     }
     */
 
-    // // Search the database for a user with the username submitted in the form
-    // User.findOne({ username }).then((found) => {
-    //     // If the user is found, send the message username is taken
-    //     if (!found) {
-    //         return res.status(400).json({ errorMessage: "Username cannot be found." });
-    //     }
-
-        bcrypt
-            .genSalt(saltRounds)
-            .then((salt) => bcrypt.hash(password, salt))
-            .then((hashedPassword) => {
-                // Create a user and save it in the database
-                if (type === "lobbyist"){
-                    const {organization} = req.body
-                    return Lobbyist.findByIdAndUpdate(id, {
-                        username,
-                        password: hashedPassword,
-                        email,
-                        type,
-                        organization
-                    }, {new: true}).catch(err => {
-                        console.log("An error has occurred while creating a new lobbyist:", err);
-                        next(err);
-                    })
-                } else if (type === "politician"){
-                    const {areasOfInfluence, position, party} = req.body
-                    return Politician.findByIdAndUpdate(id, {
-                        username,
-                        password: hashedPassword,
-                        email,
-                        type,
-                        areasOfInfluence,
-                        position,
-                        party
-                    }, {new: true}).catch(err => {
-                        console.log("An error has occurred while creating a new politician:", err);
-                        next(err);
-                    })
-                }
-            })
-            .then((user) => {
-                // Bind the user to the session object
-                res.status(201).json(user);
-            })
-            .catch((error) => {
-                if (error instanceof mongoose.Error.ValidationError) {
-                    return res.status(400).json({ errorMessage: error.message });
-                }
-                // if (error.code === 11000) {
-                //     return res.status(400).json({
-                //         errorMessage:
-                //             "Username need to be unique. The username you chose is already in use.",
-                //     });
-                // }
-                return res.status(500).json({ errorMessage: error.message });
-            });
-    // });
+    bcrypt
+        .genSalt(saltRounds)
+        .then((salt) => bcrypt.hash(password, salt))
+        .then((hashedPassword) => {
+            // Create a user and save it in the database
+            if (type === "lobbyist") {
+                const { organization } = req.body
+                return Lobbyist.findByIdAndUpdate(id, {
+                    username,
+                    password: hashedPassword,
+                    email,
+                    type,
+                    organization
+                }, { new: true }).catch(err => {
+                    console.log("An error has occurred while creating a new lobbyist:", err);
+                    next(err);
+                })
+            } else if (type === "politician") {
+                const { areasOfInfluence, position, party } = req.body
+                return Politician.findByIdAndUpdate(id, {
+                    username,
+                    password: hashedPassword,
+                    email,
+                    type,
+                    areasOfInfluence,
+                    position,
+                    party
+                }, { new: true }).catch(err => {
+                    console.log("An error has occurred while creating a new politician:", err);
+                    next(err);
+                })
+            }
+        })
+        .then((user) => {
+            // Bind the user to the session object
+            res.status(201).json(user);
+        })
+        .catch((error) => {
+            if (error instanceof mongoose.Error.ValidationError) {
+                return res.status(400).json({ errorMessage: error.message });
+            }
+            return res.status(500).json({ errorMessage: error.message });
+        });
 });
 
 router.delete("/user/:id/delete", (req, res, next) => {
-    const {id} = req.params
+    const { id } = req.params
     User.findByIdAndDelete(id)
+        .catch(err => {
+            console.log("An error has occurred while deleting a user:", err);
+        })
 })
 
 module.exports = router;
