@@ -88,8 +88,14 @@ router.post("/signup", (req, res) => {
                         })
                 }
             })
-            .then(() => {
-                const payload = { username, password };
+            .then((user) => {
+                
+                //At this point, we have checked that credentials are correct...
+                const { _id, email, username, type, organization, position, party, areasOfInfluence } = user;
+
+                // Create an object that will be set as the token payload
+                const payload = { _id, email, username, type, organization, position, party, areasOfInfluence };
+
                 // Create and sign the token
                 const authToken = jwt.sign(
                     payload,
@@ -146,10 +152,10 @@ router.post("/login", (req, res, next) => {
                 }
 
                 //At this point, we have checked that credentials are correct...
-                const { _id, email, username } = user;
+                const { _id, email, username, type, organization, position, party, areasOfInfluence } = user;
 
                 // Create an object that will be set as the token payload
-                const payload = { _id, email, username };
+                const payload = { _id, email, username, type, organization, position, party, areasOfInfluence };
 
                 // Create and sign the token
                 const authToken = jwt.sign(
@@ -176,10 +182,12 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
     res.json(req.payload);
 });
 
-router.get("/user/:id", (req, res, next) => {
-    const { id } = req.params
-    User.findById(id)
+router.get("/user", (req, res, next) => {
+    const {username} = req.query
+    console.log("username in query:", username);
+    User.find({username})
         .then(user => {
+            console.log("user returned from dB:", user);
             return res.json(user)
         })
         .catch(err => {
