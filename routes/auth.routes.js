@@ -89,7 +89,7 @@ router.post("/signup", (req, res) => {
                 }
             })
             .then((user) => {
-                
+
                 //At this point, we have checked that credentials are correct...
                 const { _id, email, username, type, organization, position, party, areasOfInfluence } = user;
 
@@ -177,17 +177,13 @@ router.post("/login", (req, res, next) => {
 });
 
 router.get("/verify", isAuthenticated, (req, res, next) => {
-    console.log(`req.payload`, req.payload);
-
     res.json(req.payload);
 });
 
 router.get("/user", (req, res, next) => {
     const {username} = req.query
-    console.log("username in query:", username);
     User.find({username})
         .then(user => {
-            console.log("user returned from dB:", user);
             return res.json(user)
         })
         .catch(err => {
@@ -272,8 +268,12 @@ router.put("/user/:id/edit", (req, res) => {
 router.delete("/user/:id/delete", (req, res, next) => {
     const { id } = req.params
     User.findByIdAndDelete(id)
+        .then(() => {
+            res.status(204).send()
+        })
         .catch(err => {
             console.log("An error has occurred while deleting a user:", err);
+            next(err);
         })
 })
 
