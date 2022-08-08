@@ -1,5 +1,7 @@
 const router = require("express").Router()
 const Service = require("../models/Service.model");
+const Lobbyist = require("../models/Lobbyist.model");
+const Politician = require("../models/Politician.model");
 
 router.get("/lobbyist/:lobbyistId", (req, res, next) => {
     const {lobbyistId} = req.params
@@ -15,12 +17,32 @@ router.get("/lobbyist/:lobbyistId", (req, res, next) => {
         })
 })
 
+router.post("/services-matching-keywords", (req, res, next) => {
+    const {areasOfInfluence} = req.body
+    Service.find({
+        areasOfInfluence: {
+            "$in": areasOfInfluence
+        }
+    })
+        .then(services => {
+            console.log("..................................", services)
+            res.status(200).json(services)
+        })
+        .catch(err => {
+            console.log("An error occurred while loading politicians matching keywords:", err);
+            next(err);
+        })
+})
+
 router.get("/politician/:politicianId", (req, res, next) => {
     const {politicianId} = req.params
     Service.find()
         .populate("lobbyist")
         .then(services => {
-            const servicesByPolitician = services.filter(service => service.politician._id.toString() === politicianId)
+            const servicesByPolitician = services.filter(service => {
+                if (service.politicians.length === 0) return false
+                return service.politicians._id.toString() === politicianId
+            })
             res.status(200).json(servicesByPolitician)
         })
         .catch(err => {
@@ -29,8 +51,9 @@ router.get("/politician/:politicianId", (req, res, next) => {
         })
 })
 
-router.get("/politicians", (req, res, next) => {
-    const {areasOfInfluence} = req.query
+router.post("/politicians", (req, res, next) => {
+    const {areasOfInfluence} = req.body
+    console.log(areasOfInfluence)
     Politician.find({
         areasOfInfluence: {
             "$in": areasOfInfluence
@@ -48,8 +71,10 @@ router.get("/politicians", (req, res, next) => {
 router.get("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
     Service.findById(serviceId)
+        .populate("lobbyist")
+        .populate("politicians")
         .then(service => {
-            res.status(200).json({service})
+            res.status(200).json(service)
         })
         .catch(err => {
             console.log("An error has occurred while loading service by id:", err);
