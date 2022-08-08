@@ -8,6 +8,6 @@ router.get("/", (req, res, next) => {
 });
 
 router.use("/auth", authRoutes);
-router.use("/service", serviceRoutes);
+router.use("/services", serviceRoutes);
 
 module.exports = router;

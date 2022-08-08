@@ -2,6 +2,10 @@ const {model, Schema} = require("mongoose")
 const keywords = require("../utils/keywords")
 
 const serviceSchema = new Schema({
+    title: {
+        type: String,
+        required: true
+    },
     lobbyist: {
         type: Schema.Types.ObjectId,
         ref: "Lobbyist",
@@ -12,8 +16,8 @@ const serviceSchema = new Schema({
         enum: keywords,
         required: true
     },
-    politician: {
-        type: Schema.Types.ObjectId,
+    politicians: {
+        type: [Schema.Types.ObjectId],
         ref: "Politician"
     },
     financialOffer: Number,

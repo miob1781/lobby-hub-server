@@ -4,12 +4,13 @@ const Service = require("../models/Service.model");
 router.get("/lobbyist/:lobbyistId", (req, res, next) => {
     const {lobbyistId} = req.params
     Service.find()
+        .populate("politicians")
         .then(services => {
             const servicesByLobbyist = services.filter(service => service.lobbyist._id.toString() === lobbyistId)
-            res.json({servicesByLobbyist})
+            res.status(200).json(servicesByLobbyist)
         })
         .catch(err => {
-            console.log("An error has occurred loading services by lobbyist:", err);
+            console.log("An error has occurred while loading services by lobbyist:", err);
             next(err);
         })
 })
@@ -17,12 +18,29 @@ router.get("/lobbyist/:lobbyistId", (req, res, next) => {
 router.get("/politician/:politicianId", (req, res, next) => {
     const {politicianId} = req.params
     Service.find()
+        .populate("lobbyist")
         .then(services => {
             const servicesByPolitician = services.filter(service => service.politician._id.toString() === politicianId)
-            res.json({servicesByPolitician})
+            res.status(200).json(servicesByPolitician)
         })
         .catch(err => {
-            console.log("An error has occurred loading services by politician:", err);
+            console.log("An error has occurred while loading services by politician:", err);
+            next(err);
+        })
+})
+
+router.get("/politicians", (req, res, next) => {
+    const {areasOfInfluence} = req.query
+    Politician.find({
+        areasOfInfluence: {
+            "$in": areasOfInfluence
+        }
+    })
+        .then(politicians => {
+            res.status(200).json(politicians)
+        })
+        .catch(err => {
+            console.log("An error occurred while loading politicians matching keywords:", err);
             next(err);
         })
 })
@@ -31,38 +49,48 @@ router.get("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
     Service.findById(serviceId)
         .then(service => {
-            res.json({service})
+            res.status(200).json({service})
         })
         .catch(err => {
-            console.log("An error has occurred loading service by id:", err);
+            console.log("An error has occurred while loading service by id:", err);
             next(err);
         })
 })
 
-router.post("/create", (req, res, next) => {
+
+router.post("/", (req, res, next) => {
     const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer} = req.body
     const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer}
     Service.create(serviceData)
+        .then(createdService => {
+            res.status(201).json(createdService)
+        })
         .catch(err => {
             console.log("An error has occurred while creating a new service:", err);
             next(err);
         })
 })
 
-router.put("/:serviceId/edit", (req, res, next) => {
+router.put("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
     const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer} = req.body
     const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer}
     Service.findByIdAndUpdate(serviceId, serviceData, {new: true})
+        .then(newData => {
+            res.status(200).json({newData})
+        })
         .catch(err => {
             console.log("An error has occurred while updating a service:", err);
             next(err);
         })
 })
 
-router.delete("/:serviceId/delete", (req, res, next) => {
+router.delete("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
     Service.findByIdAndDelete(serviceId)
+        .then(() => {
+            res.status(204).send()
+        })
         .catch(err => {
             console.log("An error has occurred while deleting a service:", err);
             next(err);

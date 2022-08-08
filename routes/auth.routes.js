@@ -180,19 +180,7 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
     res.json(req.payload);
 });
 
-router.get("/user", (req, res, next) => {
-    const {username} = req.query
-    User.find({username})
-        .then(user => {
-            return res.json(user)
-        })
-        .catch(err => {
-            console.log("An error has occurred loading user from DB:", err);
-            next(err);
-        })
-})
-
-router.put("/user/:id/edit", (req, res) => {
+router.put("/user/:id", (req, res) => {
     const { id } = req.params;
     const { username, password, email, type } = req.body;
 
@@ -265,7 +253,7 @@ router.put("/user/:id/edit", (req, res) => {
         });
 });
 
-router.delete("/user/:id/delete", (req, res, next) => {
+router.delete("/user/:id", (req, res, next) => {
     const { id } = req.params
     User.findByIdAndDelete(id)
         .then(() => {
