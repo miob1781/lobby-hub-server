@@ -1,14 +1,14 @@
 const router = require("express").Router()
 const Service = require("../models/Service.model");
-const Lobbyist = require("../models/Lobbyist.model");
 const Politician = require("../models/Politician.model");
 
 router.get("/lobbyist/:lobbyistId", (req, res, next) => {
     const {lobbyistId} = req.params
+    
     Service.find()
         .populate("politicians")
         .then(services => {
-            const servicesByLobbyist = services.filter(service => service.lobbyist._id.toString() === lobbyistId)
+            const servicesByLobbyist = services.filter(service => service.lobbyist.toString() === lobbyistId)
             res.status(200).json(servicesByLobbyist)
         })
         .catch(err => {
@@ -23,8 +23,7 @@ router.get("/politician/:politicianId", (req, res, next) => {
         .populate("lobbyist")
         .then(services => {
             const servicesByPolitician = services.filter(service => {
-                if (service.politicians.length === 0) return false
-                return service.politicians._id.toString() === politicianId
+                return service.politicians.find(politician => politician.toString() === politicianId)
             })
             res.status(200).json(servicesByPolitician)
         })
@@ -72,6 +71,7 @@ router.get("/:serviceId", (req, res, next) => {
         .populate("lobbyist")
         .populate("politicians")
         .then(service => {
+            console.log("service in server after call to GET /services/:serviceId:", service)
             res.status(200).json(service)
         })
         .catch(err => {
@@ -81,8 +81,8 @@ router.get("/:serviceId", (req, res, next) => {
 })
 
 router.post("/", (req, res, next) => {
-    const {title, lobbyist, areasOfInfluence, politician, financialOffer, otherOffers} = req.body
-    const serviceData = {title, lobbyist, areasOfInfluence, politician, financialOffer, otherOffers} 
+    const {title, lobbyist, areasOfInfluence, financialOffer, otherOffers} = req.body
+    const serviceData = {title, lobbyist, areasOfInfluence, financialOffer, otherOffers} 
     Service.create(serviceData)
         .then(createdService => {
             res.status(201).json(createdService)
@@ -95,11 +95,11 @@ router.post("/", (req, res, next) => {
 
 router.put("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
-    const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffers} = req.body
-    const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffers}
+    const {lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers} = req.body
+    const serviceData = {lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers}
     Service.findByIdAndUpdate(serviceId, serviceData, {new: true})
         .then(newData => {
-            res.status(200).json({newData})
+            res.status(200).json(newData)
         })
         .catch(err => {
             console.log("An error has occurred while updating a service:", err);
