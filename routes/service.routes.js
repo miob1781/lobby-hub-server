@@ -17,23 +17,6 @@ router.get("/lobbyist/:lobbyistId", (req, res, next) => {
         })
 })
 
-router.post("/services-matching-keywords", (req, res, next) => {
-    const {areasOfInfluence} = req.body
-    Service.find({
-        areasOfInfluence: {
-            "$in": areasOfInfluence
-        }
-    })
-        .then(services => {
-            console.log("..................................", services)
-            res.status(200).json(services)
-        })
-        .catch(err => {
-            console.log("An error occurred while loading politicians matching keywords:", err);
-            next(err);
-        })
-})
-
 router.get("/politician/:politicianId", (req, res, next) => {
     const {politicianId} = req.params
     Service.find()
@@ -51,9 +34,24 @@ router.get("/politician/:politicianId", (req, res, next) => {
         })
 })
 
+router.post("/services-matching-keywords", (req, res, next) => {
+    const {areasOfInfluence} = req.body
+    Service.find({
+        areasOfInfluence: {
+            "$in": areasOfInfluence
+        }
+    })
+        .then(services => {
+            res.status(200).json(services)
+        })
+        .catch(err => {
+            console.log("An error occurred while loading politicians matching keywords:", err);
+            next(err);
+        })
+})
+
 router.post("/politicians", (req, res, next) => {
     const {areasOfInfluence} = req.body
-    console.log(areasOfInfluence)
     Politician.find({
         areasOfInfluence: {
             "$in": areasOfInfluence
@@ -82,10 +80,9 @@ router.get("/:serviceId", (req, res, next) => {
         })
 })
 
-
 router.post("/", (req, res, next) => {
-    const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer} = req.body
-    const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer}
+    const {title, lobbyist, areasOfInfluence, politician, financialOffer, otherOffers} = req.body
+    const serviceData = {title, lobbyist, areasOfInfluence, politician, financialOffer, otherOffers} 
     Service.create(serviceData)
         .then(createdService => {
             res.status(201).json(createdService)
@@ -98,8 +95,8 @@ router.post("/", (req, res, next) => {
 
 router.put("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
-    const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer} = req.body
-    const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffer}
+    const {lobbyist, areasOfInfluence, politician, financialOffer, otherOffers} = req.body
+    const serviceData = {lobbyist, areasOfInfluence, politician, financialOffer, otherOffers}
     Service.findByIdAndUpdate(serviceId, serviceData, {new: true})
         .then(newData => {
             res.status(200).json({newData})
