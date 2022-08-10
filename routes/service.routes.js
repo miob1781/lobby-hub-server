@@ -68,10 +68,8 @@ router.post("/politicians", (req, res, next) => {
 router.get("/:serviceId", (req, res, next) => {
     const {serviceId} = req.params
     Service.findById(serviceId)
-        .populate("lobbyist")
-        .populate("politicians")
+        .populate(["lobbyist", "politicians"])
         .then(service => {
-            console.log("service in server after call to GET /services/:serviceId:", service)
             res.status(200).json(service)
         })
         .catch(err => {
@@ -98,11 +96,27 @@ router.put("/:serviceId", (req, res, next) => {
     const {lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers} = req.body
     const serviceData = {lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers}
     Service.findByIdAndUpdate(serviceId, serviceData, {new: true})
-        .then(newData => {
-            res.status(200).json(newData)
+        .populate(["lobbyist", "politicians"])
+        .then(updatedService => {
+            res.status(200).json(updatedService)
         })
         .catch(err => {
             console.log("An error has occurred while updating a service:", err);
+            next(err);
+        })
+})
+
+router.put("/:serviceId/accept-offer", (req, res, next) => {
+    const {serviceId} = req.params
+    const {politician} = req.body
+    console.log(politician)
+    Service.findByIdAndUpdate(serviceId, {$addToSet: {politicians: politician}}, {new: true})
+        .populate(["lobbyist", "politicians"])
+        .then(updatedService => {
+            res.status(200).json(updatedService)
+        })
+        .catch(err => {
+            console.log("An error has occurred while accepting a service:", err);
             next(err);
         })
 })
