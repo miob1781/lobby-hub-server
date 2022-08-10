@@ -6,6 +6,10 @@ const serviceSchema = new Schema({
         type: String,
         required: true
     },
+    description: {
+        type: String,
+        required: true
+    },
     lobbyist: {
         type: Schema.Types.ObjectId,
         ref: "Lobbyist",

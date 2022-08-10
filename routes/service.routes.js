@@ -3,10 +3,8 @@ const Service = require("../models/Service.model");
 const Politician = require("../models/Politician.model");
 
 router.get("/lobbyist/:lobbyistId", (req, res, next) => {
-    const {lobbyistId} = req.params
-    
+    const { lobbyistId } = req.params
     Service.find()
-        .populate("politicians")
         .then(services => {
             const servicesByLobbyist = services.filter(service => service.lobbyist.toString() === lobbyistId)
             res.status(200).json(servicesByLobbyist)
@@ -18,9 +16,8 @@ router.get("/lobbyist/:lobbyistId", (req, res, next) => {
 })
 
 router.get("/politician/:politicianId", (req, res, next) => {
-    const {politicianId} = req.params
+    const { politicianId } = req.params
     Service.find()
-        .populate("lobbyist")
         .then(services => {
             const servicesByPolitician = services.filter(service => {
                 return service.politicians.find(politician => politician.toString() === politicianId)
@@ -34,7 +31,7 @@ router.get("/politician/:politicianId", (req, res, next) => {
 })
 
 router.post("/services-matching-keywords", (req, res, next) => {
-    const {areasOfInfluence} = req.body
+    const { areasOfInfluence } = req.body
     Service.find({
         areasOfInfluence: {
             "$in": areasOfInfluence
@@ -50,7 +47,7 @@ router.post("/services-matching-keywords", (req, res, next) => {
 })
 
 router.post("/politicians", (req, res, next) => {
-    const {areasOfInfluence} = req.body
+    const { areasOfInfluence } = req.body
     Politician.find({
         areasOfInfluence: {
             "$in": areasOfInfluence
@@ -66,7 +63,7 @@ router.post("/politicians", (req, res, next) => {
 })
 
 router.get("/:serviceId", (req, res, next) => {
-    const {serviceId} = req.params
+    const { serviceId } = req.params
     Service.findById(serviceId)
         .populate(["lobbyist", "politicians"])
         .then(service => {
@@ -79,10 +76,13 @@ router.get("/:serviceId", (req, res, next) => {
 })
 
 router.post("/", (req, res, next) => {
-    const {title, lobbyist, areasOfInfluence, financialOffer, otherOffers} = req.body
-    const serviceData = {title, lobbyist, areasOfInfluence, financialOffer, otherOffers} 
+    const { title, description, lobbyist, areasOfInfluence, financialOffer, otherOffers } = req.body
+    const serviceData = { title, description, lobbyist, areasOfInfluence, financialOffer, otherOffers }
+    console.log("service before creation:", serviceData)
     Service.create(serviceData)
+        .populate(["lobbyist", "politician"])
         .then(createdService => {
+            console.log("service after creation:", createdService)
             res.status(201).json(createdService)
         })
         .catch(err => {
@@ -92,10 +92,10 @@ router.post("/", (req, res, next) => {
 })
 
 router.put("/:serviceId", (req, res, next) => {
-    const {serviceId} = req.params
-    const {lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers} = req.body
-    const serviceData = {lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers}
-    Service.findByIdAndUpdate(serviceId, serviceData, {new: true})
+    const { serviceId } = req.params
+    const { title, description, lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers } = req.body
+    const serviceData = { title, description, lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers }
+    Service.findByIdAndUpdate(serviceId, serviceData, { new: true })
         .populate(["lobbyist", "politicians"])
         .then(updatedService => {
             res.status(200).json(updatedService)
@@ -107,10 +107,10 @@ router.put("/:serviceId", (req, res, next) => {
 })
 
 router.put("/:serviceId/accept-offer", (req, res, next) => {
-    const {serviceId} = req.params
-    const {politician} = req.body
+    const { serviceId } = req.params
+    const { politician } = req.body
     console.log(politician)
-    Service.findByIdAndUpdate(serviceId, {$addToSet: {politicians: politician}}, {new: true})
+    Service.findByIdAndUpdate(serviceId, { $addToSet: { politicians: politician } }, { new: true })
         .populate(["lobbyist", "politicians"])
         .then(updatedService => {
             res.status(200).json(updatedService)
@@ -122,7 +122,7 @@ router.put("/:serviceId/accept-offer", (req, res, next) => {
 })
 
 router.delete("/:serviceId", (req, res, next) => {
-    const {serviceId} = req.params
+    const { serviceId } = req.params
     Service.findByIdAndDelete(serviceId)
         .then(() => {
             res.status(204).send()
