@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const authRoutes = require("./auth.routes");
 const serviceRoutes = require("./service.routes");
+const { isAuthenticated } = require("./middleware/jwt.middleware");
 
 /* GET home page */
 router.get("/", (req, res, next) => {
@@ -8,6 +9,6 @@ router.get("/", (req, res, next) => {
 });
 
 router.use("/auth", authRoutes);
-router.use("/services", serviceRoutes);
+router.use("/services", isAuthenticated, serviceRoutes);
 
 module.exports = router;

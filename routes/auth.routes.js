@@ -180,7 +180,7 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
     res.json(req.payload);
 });
 
-router.put("/user/:id", (req, res) => {
+router.put("/user/:id", isAuthenticated, (req, res) => {
     const { id } = req.params;
     const { username, password, email, type } = req.body;
 
@@ -253,7 +253,7 @@ router.put("/user/:id", (req, res) => {
         });
 });
 
-router.delete("/user/:id", (req, res, next) => {
+router.delete("/user/:id", isAuthenticated, (req, res, next) => {
     const { id } = req.params
     User.findByIdAndDelete(id)
         .then(() => {
