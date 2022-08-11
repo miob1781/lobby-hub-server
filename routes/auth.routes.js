@@ -253,16 +253,4 @@ router.put("/user/:id", isAuthenticated, (req, res) => {
         });
 });
 
-router.delete("/user/:id", isAuthenticated, (req, res, next) => {
-    const { id } = req.params
-    User.findByIdAndDelete(id)
-        .then(() => {
-            res.status(204).send()
-        })
-        .catch(err => {
-            console.log("An error has occurred while deleting a user:", err);
-            next(err);
-        })
-})
-
 module.exports = router;
