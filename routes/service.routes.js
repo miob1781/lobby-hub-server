@@ -78,12 +78,9 @@ router.get("/:serviceId", (req, res, next) => {
 router.post("/", (req, res, next) => {
     const { title, description, lobbyist, areasOfInfluence, financialOffer, otherOffers } = req.body
     const serviceData = { title, description, lobbyist, areasOfInfluence, financialOffer, otherOffers }
-    console.log("service before creation:", serviceData)
     Service.create(serviceData)
-        .populate(["lobbyist", "politician"])
-        .then(createdService => {
-            console.log("service after creation:", createdService)
-            res.status(201).json(createdService)
+        .then(() => {
+            res.status(204).send()
         })
         .catch(err => {
             console.log("An error has occurred while creating a new service:", err);
@@ -96,9 +93,8 @@ router.put("/:serviceId", (req, res, next) => {
     const { title, description, lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers } = req.body
     const serviceData = { title, description, lobbyist, areasOfInfluence, politicians, financialOffer, otherOffers }
     Service.findByIdAndUpdate(serviceId, serviceData, { new: true })
-        .populate(["lobbyist", "politicians"])
-        .then(updatedService => {
-            res.status(200).json(updatedService)
+        .then(() => {
+            res.status(204).send()
         })
         .catch(err => {
             console.log("An error has occurred while updating a service:", err);
@@ -109,7 +105,6 @@ router.put("/:serviceId", (req, res, next) => {
 router.put("/:serviceId/accept-offer", (req, res, next) => {
     const { serviceId } = req.params
     const { politician } = req.body
-    console.log(politician)
     Service.findByIdAndUpdate(serviceId, { $addToSet: { politicians: politician } }, { new: true })
         .populate(["lobbyist", "politicians"])
         .then(updatedService => {
