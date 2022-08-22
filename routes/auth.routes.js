@@ -14,10 +14,6 @@ const User = require("../models/User.model");
 const Lobbyist = require("../models/Lobbyist.model");
 const Politician = require("../models/Politician.model");
 
-router.get("/loggedin", (req, res) => {
-    res.json(req.user);
-});
-
 router.post("/signup", (req, res) => {
     const { username, password, email, type } = req.body;
 
