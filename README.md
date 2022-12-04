@@ -1,6 +1,6 @@
 # lobby-hub-server
 
-This is the repository for the backend application of LobbyHub. Go to the repository of the frontend application [here](https://github.com/miob1781/lobby-hub-client).
+This is the repository for the backend application of LobbyHub. It has been deployed on [Render](https://lobby-hub-server.onrender.com). Go to the repository of the frontend application [here](https://github.com/miob1781/lobby-hub-client).
 
 ## Instructions
 
